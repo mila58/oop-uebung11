@@ -8,9 +8,9 @@ des Codes unter Beibehaltung seines äußeren Verhaltens ändert.
 
 Sie beginnen mit einem Programm, das korrekt ausgeführt wird, aber nicht gut strukturiert ist. Refactoring verbessert die Struktur, wodurch es einfacher wird, das Programm zu pflegen und zu erweitern.
 
-## Der Startpunkt
+## Der Startpunkt für die Übung
 
-Das Beispielprogramm ist recht überschaubar. Es ist ein Programm zu
+Das Beispielprogramm ist recht überschaubar. Es ist ein Programm zum
 berechnen und drucken des Beleges eines Kunden in einem Videogeschäft.
 
 Dem Programm wird mitgeteilt, welche Filme ein Kunde wie lange ausgeliehen hat. Es berechnet dann die Gebühren, die davon abhängen, wie lange der Film ausgeliehen wurde und identifiziert die Art des Films. 
@@ -20,18 +20,18 @@ Es gibt 3 Arten von Filmen:
 - Kinderfilme 
 - Neuerscheinungen
 
-Neben der Berechnung der Gebühren werden in der Abrechnung  Bonuspunkte berechnet, die abhängig davon abhängen, ob der Film eine Neuerscheinung ist.
+Neben der Berechnung der Gebühren werden in der Abrechnung  Bonuspunkte berechnet, die abhängig davon sind, ob der Film eine Neuerscheinung ist.
 
 Hier ein Klassendiagramm:
 
 ![Start](images/img1.png)
 
 
-Wir werden nun diese Programm Schritt für Schritt überarbeiten. Glücklicherweise gibt es bereits einen TestCase. Schauen Sie sich diesen an, um zu verstehen, was das Programm überhaupt macht.
+Wir werden nun dieses Programm Schritt für Schritt überarbeiten. Glücklicherweise gibt es bereits einen TestCase (siehe Testfolder). Schauen Sie sich diesen an, um zu verstehen, was das Programm überhaupt macht.
 
 ## Aufgabe 1: Extracting the Amount Calculation
 
-Das offensichtliche erste Ziel ist die zu lange `statement()`-Methode des Customer. Aus eine solchen Methode sollte ein Teil des Codes herausgenommen werden und eine Methode daraus extrahieren. Das Extrahieren einer Methode bedeutet, den Code zu entnehmen und daraus eine Methode zu machen. Ein offensichtliches Stück hier ist die switch-Anweisung:
+Das offensichtliche erste Ziel ist die zu lange `statement()`-Methode in der `Customer`-Klasse. Aus der Methode sollte ein Teil des Codes herausgenommen werden, um daraus dann eine neue Methode zu extrahieren. Das Extrahieren einer Methode bedeutet, den Code zu entnehmen und daraus eine Methode zu machen. Ein "verdächtiges" Stück Code ist offensichtlich die switch-Anweisung:
 
 ```java
             //determine amounts for each line
@@ -52,14 +52,14 @@ Das offensichtliche erste Ziel ist die zu lange `statement()`-Methode des Custom
             } 
 ```
 
-Dies sieht so aus, als würde es einen guten Teil ergeben, der in seine eigene Methode extrahiert werden kann. Wenn wir eine Methode extrahieren,müssen wir im Fragment nach Variablen suchen, deren Gültigkeitsbereich lokal für die Methode ist, die wir betrachten, also nach lokalen Variablen und Parametern. 
+Wenn wir eine Methode extrahieren, müssen wir im Code-Fragment nach Variablen suchen, deren Gültigkeitsbereich lokal für die Methode ist, die wir betrachten, also nach lokalen Variablen und Parametern. 
 
 Dieses Codesegment verwendet zwei: `each` und `thisAmount`. Von diesen wird `each` nicht durch den Code geändert, sondern nur `thisAmount`.  
 
 Die Extraktion sieht so aus:
 
-- Wir führen eine neue Methode `amountFor`
-- und ersetzen den Aufruf in der der `statemetn()`-Methode
+- Wir führen eine neue Methode `amountFor` ein
+- und ersetzen den Aufruf in der der `statement()`-Methode
 
 ```java
 private int amountFor(Rental each) {
@@ -90,15 +90,18 @@ while (rentals.hasMoreElements()) {
 	double thisAmount = 0;
 	Rental each = (Rental) rentals.nextElement();
 	//determine amounts for each line
-	thisAmount = amountFor(each);
+->	thisAmount = amountFor(each);
 	...
 ```
 
-Test laufen lassen und schauen, ob die Änderung etwas verändert hat!
+ACHTUNG:
+> **Test laufen lassen und schauen, ob die Änderung etwas verändert hat!**
 
 ## Aufgabe 2: Umbenennen (Rename)
 
-Es bietet sich an in `AmountFor`den Parameter umzubennen von `each` in `aRental` und das Attribut `thisAmount` in `result`. Dananch Sieht der Code wie folgt aus:
+Es bietet sich an in der `amountFor`-Methode den Parameter umzubennen; von `each` in `aRental` und das Attribut `thisAmount` in `result`. 
+
+Danach sieht der Code wie folgt aus:
 
 ```java
 private int amountFor(Rental aRental) {
@@ -124,13 +127,13 @@ private int amountFor(Rental aRental) {
 } 
 ```
 
-Tests laufen lassen!
+> Tests laufen lassen!
 
 ## Aufgabe 3: Moving amount calculation
 
-Sieht man sich `amountFor` an, sieht man, dass Informationen aus `Rental` verwendet werden, aber keine Informationen vom `Customer`. In den meisten Fällen sollte sich eine Methode auf dem Objekt befinden, dessen Daten es verwendet. Befindet sich diese Methode also auf dem falschen Objekt, sollte sie in `Rental` verschoben werden.
+Sieht man sich `amountFor` an, sieht man, dass Informationen aus der `Rental`-Klasse verwendet werden, aber keine Informationen der `Customer`-Klasse. In den meisten Fällen sollte sich eine Methode in dem Objekt befinden, dessen Daten es verwendet. Befindet sich diese Methode also im falschen Objekt? Sollte sie in `Rental` verschoben werden? - Ja.
 
-Also den Code nach `Rental`:
+Also den Code in die `Rental`-Klasse umziehen:
 
 ```java
 class Rental...
@@ -155,7 +158,7 @@ class Rental...
 }
 ```
 
-Und in `Customer`nur noch den Aufruf:
+Und in der `Customer`-Klasse sieht der Aufruf danach recht unspektakulär aus:
 
 ```java
 
@@ -167,9 +170,9 @@ class Customer
 }
 ```
 
-Tests laufen lassen!
+> Ach ja: **Tests laufen lassen!**
 
-Und nun könne wir sogar noch:
+Und nun können wir sogar noch den Aufruf von `amountFor` komplett loswerden. Wir ersetzen in der `Customer`-Klasse:
 
 ```java
 	//determine amounts for each line
@@ -183,9 +186,9 @@ durch
 	thisAmount = each.getCharge(); 
 ```
 
-ersetzen!
+> Schon ganz gut aufgeräumt! Verantwortlichkeiten glattgezogen und weniger Code in der kritischen `statement`-Methode.
 
-Nun sieht unser Model so aus:
+Das Model sieht nun so aus:
 
 ![Image2](images/img2.png)
 
@@ -241,17 +244,15 @@ Und in der Customer Klasse in der `statement`-Methode ersetzen:
 		frequentRenterPoints += each.getFrequentRenterPoints(); 
 ```
 
-Modell sieht so aus:
+Modell sieht dann so aus:
 
 ![Image3](images/img3.png)
 
-Ach ja, Tests laufen lassen!
+> und wieder: **Tests laufen lassen!**
 
 ## Aufgabe 5: Removing Temps
 
-Als nächsten Schritt schmeissen wir ein paar temporäre Variablen in Customer raus.
-
-Wir führen folgende Methode ein in Customer ein:
+Als nächsten Schritt schmeißen wir ein paar temporäre Variablen in `Customer` raus. Dazu führen wir folgende Methode ein in der `Customer`-Klasse ein:
 
 ```java
 private double getTotalCharge(){
@@ -279,7 +280,7 @@ private double getTotalFrequentRenterPoints(){
 } 
 ```
 
-und machen folgendes in der `statement`-Methode:
+und machen folgende Änderungen in der `statement`-Methode:
 
 ```java
 public String statement() {
@@ -303,7 +304,7 @@ change -->		result += "You earned " + String.valueOf(getTotalFrequentRenterPoint
 }
 ```
 
-Das Modell dazu:
+Das Model dazu:
 
 ![Image4](images/img4.png)
 
@@ -311,7 +312,7 @@ Das Modell dazu:
 
 Nun kommt mein Lieblingsthema. Wir werden das switch-Statement durch Polymorphie ersetzen.
 
-Zunächste verschieben wir die Methode `getCharge` in die `Movie`-Klasse:
+Zunächste verschieben wir die Methode `getCharge` in die `Movie`-Klasse, da können sämtliche `getMovie()`-Aufrufe gelöscht werden, denn wir befinden uns ja in der `Movie`-Klasse. Offensichtlich gehört dieser Codeteil hier hin:
 
 ```java
 Class Movie …
@@ -357,6 +358,14 @@ Das Modell sieht dann so aus:
 Als, nächstes führen wir eine `Price`-Klasse ein. Das soll im Klassendiagramm so aussehen:
 
 ![Image6](images/img6.png)
+
+Sprich, wir erstellen 4 Klassen:
+
+- Price (das ist die Basisklasse. Kann/Soll die abstract sein?)
+- ChildrensPrice
+- RegularPrice
+- NewReleasePrice
+
 
 Die `Movie`-Klasse ändern wir, wie folgt:
 
@@ -417,20 +426,21 @@ class RegularPrice extends Price {
 } 
 ```
 
-Nun, spendieren wir der `Price`-Basisklasse eine abstrakte Methode `abstract double getCharge(int dasyRented)`. In den Unterklassen können wir nun den Code aus der `getCharge`-Methode in `Movie` in die `Price`-Klassen umziehen:
+Nun, spendieren wir der `Price`-Basisklasse eine abstrakte Methode `abstract double getCharge(int dasyRented)`. In den Unterklassen können wir nun den Code aus der `getCharge`-Methode von der `Movie`-Klasse in die jeweilige `Price`-Klassen umziehen:
 
 ```java
 class RegularPrice…
 
- double getCharge(int daysRented) {
-	double result = 2;
-	if (daysRented > 2)
-		result += (daysRented - 2) * 1.5;
-	return result;
- }
+	double getCharge(int daysRented) {
+		double result = 2;
+		if (daysRented > 2)
+			result += (daysRented - 2) * 1.5;
+		return result;
+	}
 
 
 class ChildrensPrice…
+
 	double charge(int daysRented){
 		double result = 1.5;
 		if (daysRented > 3)
@@ -439,6 +449,7 @@ class ChildrensPrice…
 	} 
 
 class NewReleasePrice…
+
 	double charge(int daysRented){
 		return daysRented * 3;
 	} 
@@ -456,13 +467,17 @@ class Movie …
 
 ```
 
-Den gleichen Spass machen wir mit der `getFrequentRenterPoints`-Methode. Das Schöne hier ist, dass nur `NewReleasePrice` eine spezielle Implementierung benötigt, während die Basisfunktionalität in in der Basisklasse `Price`passieren kann.
+Den gleichen Spass machen wir mit der `getFrequentRenterPoints`-Methode. 
 
-Testen nicht vergessen!!!!
+Das Schöne hier ist, dass nur `NewReleasePrice` eine spezielle Implementierung benötigt, während die Basisfunktionalität in in der Basisklasse `Price` passieren kann.
 
-## Ende
+> Wie immer: **Testen nicht vergessen!!!!**
 
-Das Modell sieht nun so aus:
+## This is the end!
+
+Wenn wir fertig sind, sollte der Test immernoch duchlaufen. Das Model hat sich deutlcih geändert, zeigt aber eine viel objektorientiertere Struktur. Vor allem is wichtig, dass der Code klarer und strukturierter geworden ist. 
+
+Final sieht das Model so aus:
 
 ![Image7](images/img7.png)
 
